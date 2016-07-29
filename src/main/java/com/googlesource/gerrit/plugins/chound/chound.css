@@ -1,0 +1,6 @@
+.commitExtension {
+  padding-top: 0px;
+  padding: 0;
+  vertical-align: top;
+}
+.commitExtension { width: COMMIT_WIDTH; }
