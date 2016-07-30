@@ -16,9 +16,13 @@ package com.googlesource.gerrit.plugins.chound.client;
 
 import com.google.gerrit.client.GerritUiExtensionPoint;
 import com.google.gerrit.client.info.ChangeInfo;
+import com.google.gerrit.client.info.ChangeInfo.CommitInfo;
+import com.google.gerrit.client.info.ChangeInfo.RevisionInfo;
 import com.google.gerrit.client.rpc.NativeMap;
 import com.google.gerrit.plugin.client.extension.Panel;
 import com.google.gerrit.plugin.client.rpc.RestApi;
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.InlineHyperlink;
@@ -34,16 +38,34 @@ public class LabelPanel extends VerticalPanel {
   }
 
   LabelPanel(final Panel panel) {
-    ChangeInfo change =
+    final ChangeInfo change =
         panel.getObject(GerritUiExtensionPoint.Key.CHANGE_INFO).cast();
-    RestApi r = new RestApi("changes")
-      .view("?q=message:" + change.changeId())
-      .view("+NOT+change:" + change.changeId());
-    r.get(new AsyncCallback<NativeMap<ChangeInfo>>() {
+    RevisionInfo rev =
+        panel.getObject(GerritUiExtensionPoint.Key.REVISION_INFO).cast();
+
+    new RestApi("changes").id(change.id()).view("revisions").id(rev.id())
+    .view("commit")
+    .get(new AsyncCallback<CommitInfo>() {
+      @Override
+      public void onSuccess(CommitInfo result) {
+        if (result != null) {
+          displayDependsOn(result);
+        }
+      }
+
+      @Override
+      public void onFailure(Throwable caught) {
+        // never invoked
+      }
+    });
+
+    new RestApi("changes").view("?q=message:" + change.changeId())
+    .view("+NOT+change:" + change.changeId())
+    .get(new AsyncCallback<NativeMap<ChangeInfo>>() {
       @Override
       public void onSuccess(NativeMap<ChangeInfo> result) {
         if (!result.isEmpty()) {
-          display(result);
+          displayNeededBy(result);
         }
       }
 
@@ -54,17 +76,29 @@ public class LabelPanel extends VerticalPanel {
     });
   }
 
-  private void display(NativeMap<ChangeInfo> result) {
-    if (!result.isEmpty()) {
+  private void displayDependsOn(CommitInfo result) {
+    String message = result.message();
+    if (message.toLowerCase().contains("depends-on:")) {
       HorizontalPanel p = new HorizontalPanel();
-      InlineLabel il = new InlineLabel("Dependency");
-      p.add(il);
-      for (String key : result.keySet()) {
-        InlineHyperlink ih = new InlineHyperlink(
-            result.get(key).changeId(), "/c/" + result.get(key)._number());
-        p.add(ih);
+      p.add(new InlineLabel("Depends-on"));
+      MatchResult matcher;
+      RegExp pattern = RegExp.compile("[Dd]epends-[Oo]n:? (I[0-9a-f]{8,40})", "g");
+      while ((matcher = pattern.exec(message)) != null) {
+        p.add(new InlineLabel(matcher.getGroup(1)));
       }
       add(p);
     }
+  }
+
+  private void displayNeededBy(NativeMap<ChangeInfo> result) {
+    HorizontalPanel p = new HorizontalPanel();
+    InlineLabel il = new InlineLabel("Needed-by");
+    p.add(il);
+    for (String key : result.keySet()) {
+      InlineHyperlink ih = new InlineHyperlink(
+          result.get(key).changeId(), "/c/" + result.get(key)._number());
+      p.add(ih);
+    }
+    add(p);
   }
 }
