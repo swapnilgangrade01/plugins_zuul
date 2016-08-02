@@ -89,11 +89,13 @@ public class LabelPanel extends VerticalPanel {
       RegExp pattern =
           RegExp.compile("[Dd]epends-[Oo]n:? (I[0-9a-f]{8,40})", "g");
       while ((matcher = pattern.exec(message)) != null) {
-        grid.insertRow(row);
         HorizontalPanel p = new HorizontalPanel();
         p.addStyleName("infoBlock");
-        p.add(new Label("Depends-on"));
+        Label label = new Label("Depends-on");
+        label.setWidth("72px");
+        p.add(label);
         p.add(new CopyableLabel(matcher.getGroup(1)));
+        grid.insertRow(row);
         grid.setWidget(row, 0, p);
         row++;
       }
@@ -102,12 +104,20 @@ public class LabelPanel extends VerticalPanel {
   }
 
   private void displayNeededBy(NativeMap<ChangeInfo> result) {
-    HorizontalPanel p = new HorizontalPanel();
-    p.addStyleName("infoBlock");
-    p.add(new Label("Needed-by"));
+    int row = 0;
+    int column = 1;
+    Grid grid = new Grid(row, column);
     for (String key : result.keySet()) {
+      HorizontalPanel p = new HorizontalPanel();
+      p.addStyleName("infoBlock");
+      Label label = new Label("Needed-by");
+      label.setWidth("72px");
+      p.add(label);
       p.add(new CopyableLabel(result.get(key).changeId()));
+      grid.insertRow(row);
+      grid.setWidget(row, 0, p);
+      row++;
     }
-    add(p);
+    add(grid);
   }
 }
