@@ -42,30 +42,32 @@ public class LabelPanel extends VerticalPanel {
   LabelPanel(final Panel panel) {
     final ChangeInfo change =
         panel.getObject(GerritUiExtensionPoint.Key.CHANGE_INFO).cast();
-    RevisionInfo rev =
+    final RevisionInfo rev =
         panel.getObject(GerritUiExtensionPoint.Key.REVISION_INFO).cast();
 
-    new RestApi("changes").id(change.id()).view("revisions").id(rev.id())
-        .view("commit").get(new AsyncCallback<CommitInfo>() {
-          @Override
-          public void onSuccess(CommitInfo result) {
-            if (result != null) {
-              displayDependsOn(result);
+    // revision might not be available when using inline edit
+    if (rev != null && !rev.isEdit()) {
+      new RestApi("changes").id(change.id()).view("revisions").id(rev.id())
+          .view("commit").get(new AsyncCallback<CommitInfo>() {
+            @Override
+            public void onSuccess(CommitInfo result) {
+              if (result != null) {
+                displayDependsOn(result);
+              }
             }
-          }
 
-          @Override
-          public void onFailure(Throwable caught) {
-            // never invoked
-          }
-        });
-
+            @Override
+            public void onFailure(Throwable caught) {
+              // never invoked
+            }
+          });
+    }
     new RestApi("changes").view("?q=message:" + change.changeId())
         .view("+NOT+change:" + change.changeId())
         .get(new AsyncCallback<NativeMap<ChangeInfo>>() {
           @Override
           public void onSuccess(NativeMap<ChangeInfo> result) {
-            if (!result.isEmpty()) {
+            if (result != null && !result.isEmpty()) {
               displayNeededBy(result);
             }
           }
