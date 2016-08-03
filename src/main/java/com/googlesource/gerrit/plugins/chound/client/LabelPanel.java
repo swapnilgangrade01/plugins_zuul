@@ -16,13 +16,10 @@ package com.googlesource.gerrit.plugins.chound.client;
 
 import com.google.gerrit.client.GerritUiExtensionPoint;
 import com.google.gerrit.client.info.ChangeInfo;
-import com.google.gerrit.client.info.ChangeInfo.CommitInfo;
 import com.google.gerrit.client.info.ChangeInfo.RevisionInfo;
-import com.google.gerrit.client.rpc.NativeMap;
+import com.google.gerrit.plugin.client.Plugin;
 import com.google.gerrit.plugin.client.extension.Panel;
 import com.google.gerrit.plugin.client.rpc.RestApi;
-import com.google.gwt.regexp.shared.MatchResult;
-import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -45,30 +42,13 @@ public class LabelPanel extends VerticalPanel {
     final RevisionInfo rev =
         panel.getObject(GerritUiExtensionPoint.Key.REVISION_INFO).cast();
 
-    // revision might not be available when using inline edit
-    if (rev != null && !rev.isEdit()) {
-      new RestApi("changes").id(change.id()).view("revisions").id(rev.id())
-          .view("commit").get(new AsyncCallback<CommitInfo>() {
-            @Override
-            public void onSuccess(CommitInfo result) {
-              if (result != null) {
-                displayDependsOn(result);
-              }
-            }
-
-            @Override
-            public void onFailure(Throwable caught) {
-              // never invoked
-            }
-          });
-    }
-    new RestApi("changes").view("?q=message:" + change.changeId())
-        .view("+NOT+change:" + change.changeId())
-        .get(new AsyncCallback<NativeMap<ChangeInfo>>() {
+    new RestApi("changes").id(change.id()).view("revisions").id(rev.id())
+        .view(Plugin.get().getPluginName(), "dependency")
+        .get(new AsyncCallback<DependencyInfo>() {
           @Override
-          public void onSuccess(NativeMap<ChangeInfo> result) {
-            if (result != null && !result.isEmpty()) {
-              displayNeededBy(result);
+          public void onSuccess(DependencyInfo result) {
+            if (result != null) {
+              display(result);
             }
           }
 
@@ -79,41 +59,30 @@ public class LabelPanel extends VerticalPanel {
         });
   }
 
-  private void displayDependsOn(CommitInfo result) {
+  private void display(DependencyInfo result) {
     int row = 0;
     int column = 1;
     Grid grid = new Grid(row, column);
-    String message = result.message();
-    if (message.toLowerCase().contains("depends-on:")) {
-      MatchResult matcher;
-      RegExp pattern =
-          RegExp.compile("[Dd]epends-[Oo]n:? (I[0-9a-f]{8,40})", "g");
-      while ((matcher = pattern.exec(message)) != null) {
-        HorizontalPanel p = new HorizontalPanel();
-        p.addStyleName("infoBlock");
-        Label label = new Label("Depends-on");
-        label.setWidth("72px");
-        p.add(label);
-        p.add(new CopyableLabel(matcher.getGroup(1)));
-        grid.insertRow(row);
-        grid.setWidget(row, 0, p);
-        row++;
-      }
-      add(grid);
+    // show depends-on ids
+    for (int i=0; i < result.dependsOn().length(); i++) {
+      HorizontalPanel p = new HorizontalPanel();
+      p.addStyleName("infoBlock");
+      Label label = new Label("Depends-on");
+      label.setWidth("72px");
+      p.add(label);
+      p.add(new CopyableLabel(result.dependsOn().get(i)));
+      grid.insertRow(row);
+      grid.setWidget(row, 0, p);
+      row++;
     }
-  }
-
-  private void displayNeededBy(NativeMap<ChangeInfo> result) {
-    int row = 0;
-    int column = 1;
-    Grid grid = new Grid(row, column);
-    for (String key : result.keySet()) {
+    // show needed-by ids
+    for (int i=0; i < result.neededBy().length(); i++) {
       HorizontalPanel p = new HorizontalPanel();
       p.addStyleName("infoBlock");
       Label label = new Label("Needed-by");
       label.setWidth("72px");
       p.add(label);
-      p.add(new CopyableLabel(result.get(key).changeId()));
+      p.add(new CopyableLabel(result.neededBy().get(i)));
       grid.insertRow(row);
       grid.setWidget(row, 0, p);
       row++;

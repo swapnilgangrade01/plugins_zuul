@@ -1,4 +1,4 @@
-// Copyright (C) 2016 The Android Open Source Project
+// Copyright (C) 2015 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,20 +14,10 @@
 
 package com.googlesource.gerrit.plugins.chound;
 
-import static com.google.gerrit.server.change.RevisionResource.REVISION_KIND;
+import java.util.List;
 
-import com.google.gerrit.extensions.restapi.RestApiModule;
-import com.google.inject.AbstractModule;
-
-public class Module extends AbstractModule {
-
-  @Override
-  protected void configure() {
-    install(new RestApiModule() {
-      @Override
-      protected void configure() {
-        get(REVISION_KIND, "dependency").to(GetDependency.class);
-      }
-    });
-  }
+public class DependencyInfo {
+  public List<String> dependsOn;
+  public List<String> neededBy;
+  public boolean cycle;
 }

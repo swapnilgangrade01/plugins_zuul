@@ -1,3 +1,1 @@
-The @PLUGIN@ plugin tracks down referenced Gerrit changes from the
-commit message and displays it on the change screen.
-
+The @PLUGIN@ plugin shows Zuul cross project dependencies on the Gerrit UI.
