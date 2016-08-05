@@ -42,21 +42,23 @@ public class LabelPanel extends VerticalPanel {
     final RevisionInfo rev =
         panel.getObject(GerritUiExtensionPoint.Key.REVISION_INFO).cast();
 
-    new RestApi("changes").id(change.id()).view("revisions").id(rev.id())
-        .view(Plugin.get().getPluginName(), "dependency")
-        .get(new AsyncCallback<DependencyInfo>() {
-          @Override
-          public void onSuccess(DependencyInfo result) {
-            if (result != null) {
-              display(result);
+    if (!rev.isEdit()) {
+      new RestApi("changes").id(change.id()).view("revisions").id(rev.id())
+          .view(Plugin.get().getPluginName(), "dependency")
+          .get(new AsyncCallback<DependencyInfo>() {
+            @Override
+            public void onSuccess(DependencyInfo result) {
+              if (result != null) {
+                display(result);
+              }
             }
-          }
 
-          @Override
-          public void onFailure(Throwable caught) {
-            // never invoked
-          }
-        });
+            @Override
+            public void onFailure(Throwable caught) {
+              // never invoked
+            }
+          });
+    }
   }
 
   private void display(DependencyInfo result) {
