@@ -1,5 +1,5 @@
-Build
-=====
+@PLUGIN@ Build
+==============
 
 This plugin can be built with Buck or Maven.
 

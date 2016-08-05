@@ -1,1 +1,5 @@
-The @PLUGIN@ plugin shows Zuul cross project dependencies on the Gerrit UI.
+The @PLUGIN@ plugin displays Zuul cross repository dependencies (CRD)
+info on the Gerrit UI.
+
+![ZuulCRDScreenshot](images/zuul_crd.png)
+
