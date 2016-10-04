@@ -12,22 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.googlesource.gerrit.plugins.chound;
+package com.googlesource.gerrit.plugins.dependson;
 
-import static com.google.gerrit.server.change.RevisionResource.REVISION_KIND;
+import com.google.gerrit.extensions.registration.DynamicSet;
+import com.google.gerrit.extensions.webui.GwtPlugin;
+import com.google.gerrit.extensions.webui.WebUiPlugin;
+import com.google.gerrit.httpd.plugins.HttpPluginModule;
 
-import com.google.gerrit.extensions.restapi.RestApiModule;
-import com.google.inject.AbstractModule;
-
-public class Module extends AbstractModule {
+public class HttpModule extends HttpPluginModule {
 
   @Override
-  protected void configure() {
-    install(new RestApiModule() {
-      @Override
-      protected void configure() {
-        get(REVISION_KIND, "dependency").to(GetDependency.class);
-      }
-    });
+  protected void configureServlets() {
+    DynamicSet.bind(binder(), WebUiPlugin.class)
+        .toInstance(new GwtPlugin("dependson"));
   }
 }

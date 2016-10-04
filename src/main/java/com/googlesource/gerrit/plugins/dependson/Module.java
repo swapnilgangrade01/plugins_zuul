@@ -1,4 +1,4 @@
-// Copyright (C) 2015 The Android Open Source Project
+// Copyright (C) 2016 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.googlesource.gerrit.plugins.chound;
+package com.googlesource.gerrit.plugins.dependson;
 
-import java.util.List;
+import static com.google.gerrit.server.change.RevisionResource.REVISION_KIND;
 
-public class DependencyInfo {
-  public List<String> dependsOn;
-  public List<String> neededBy;
-  public boolean cycle;
+import com.google.gerrit.extensions.restapi.RestApiModule;
+import com.google.inject.AbstractModule;
+
+public class Module extends AbstractModule {
+
+  @Override
+  protected void configure() {
+    install(new RestApiModule() {
+      @Override
+      protected void configure() {
+        get(REVISION_KIND, "dependency").to(GetDependency.class);
+      }
+    });
+  }
 }
