@@ -54,7 +54,7 @@ The `DependencyInfo` entity shows zuul dependencies on a patch set.
 |Field Name |Description|
 |:----------|:----------|
 |depends_on |List of changes that this change depends on|
-|needed-by  |List of changes that is dependent on this change|
+|needed_by  |List of changes that is dependent on this change|
 |cycle      |Whether this change is in a circular dependency chain|
 
 
