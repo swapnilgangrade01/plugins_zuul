@@ -14,7 +14,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<module rename-to="Chound">
+<module rename-to="dependson">
   <!-- Inherit the core Web Toolkit stuff.                        -->
   <inherits name="com.google.gwt.user.User"/>
   <!-- Other module inherits                                      -->
@@ -24,6 +24,6 @@
   <!-- resources to the plugin. No theme inherits lines were      -->
   <!-- added in order to make this plugin as simple as possible   -->
   <!-- Specify the app entry point class.                         -->
-  <entry-point class="com.googlesource.gerrit.plugins.chound.client.ChoundPlugin"/>
-  <stylesheet src="chound.css"/>
+  <entry-point class="com.googlesource.gerrit.plugins.dependson.client.DependsOnPlugin"/>
+  <stylesheet src="dependson.css"/>
 </module>

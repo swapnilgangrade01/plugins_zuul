@@ -12,18 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.googlesource.gerrit.plugins.chound;
+package com.googlesource.gerrit.plugins.dependson.client;
 
-import com.google.gerrit.extensions.registration.DynamicSet;
-import com.google.gerrit.extensions.webui.GwtPlugin;
-import com.google.gerrit.extensions.webui.WebUiPlugin;
-import com.google.gerrit.httpd.plugins.HttpPluginModule;
+import com.google.gerrit.client.GerritUiExtensionPoint;
+import com.google.gerrit.client.Resources;
+import com.google.gerrit.plugin.client.Plugin;
+import com.google.gerrit.plugin.client.PluginEntryPoint;
+import com.google.gwt.core.client.GWT;
 
-public class HttpModule extends HttpPluginModule {
+public class DependsOnPlugin extends PluginEntryPoint {
+  public static final Resources RESOURCES = GWT.create(Resources.class);
 
   @Override
-  protected void configureServlets() {
-    DynamicSet.bind(binder(), WebUiPlugin.class)
-        .toInstance(new GwtPlugin("Chound"));
+  public void onPluginLoad() {
+
+    Plugin.get().panel(
+        GerritUiExtensionPoint.CHANGE_SCREEN_BELOW_COMMIT_INFO_BLOCK,
+        new LabelPanel.Factory());
   }
 }
