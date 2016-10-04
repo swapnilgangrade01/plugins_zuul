@@ -36,6 +36,8 @@ public class LabelPanel extends VerticalPanel {
     }
   }
 
+  private final static String COLOR_RED = "#F00";
+
   LabelPanel(final Panel panel) {
     final ChangeInfo change =
         panel.getObject(GerritUiExtensionPoint.Key.CHANGE_INFO).cast();
@@ -72,7 +74,11 @@ public class LabelPanel extends VerticalPanel {
       Label label = new Label("Depends-on");
       label.setWidth("72px");
       p.add(label);
-      p.add(new CopyableLabel(result.dependsOn().get(i)));
+      CopyableLabel cl = new CopyableLabel(result.dependsOn().get(i));
+      if (result.cycle()) {
+        cl.getElement().getStyle().setColor(COLOR_RED);
+      }
+      p.add(cl);
       grid.insertRow(row);
       grid.setWidget(row, 0, p);
       row++;
@@ -84,7 +90,11 @@ public class LabelPanel extends VerticalPanel {
       Label label = new Label("Needed-by");
       label.setWidth("72px");
       p.add(label);
-      p.add(new CopyableLabel(result.neededBy().get(i)));
+      CopyableLabel cl = new CopyableLabel(result.neededBy().get(i));
+      if (result.cycle()) {
+        cl.getElement().getStyle().setColor(COLOR_RED);
+      }
+      p.add(cl);
       grid.insertRow(row);
       grid.setWidget(row, 0, p);
       row++;
