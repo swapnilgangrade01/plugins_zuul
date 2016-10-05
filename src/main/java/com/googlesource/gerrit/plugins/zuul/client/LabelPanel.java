@@ -46,7 +46,7 @@ public class LabelPanel extends VerticalPanel {
 
     if (!rev.isEdit()) {
       new RestApi("changes").id(change.id()).view("revisions").id(rev.id())
-          .view(Plugin.get().getPluginName(), "dependency")
+          .view(Plugin.get().getPluginName(), "crd")
           .get(new AsyncCallback<DependencyInfo>() {
             @Override
             public void onSuccess(DependencyInfo result) {

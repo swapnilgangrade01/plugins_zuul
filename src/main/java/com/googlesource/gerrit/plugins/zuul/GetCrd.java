@@ -42,23 +42,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Singleton
-public class GetDependency implements RestReadView<RevisionResource> {
+public class GetCrd implements RestReadView<RevisionResource> {
   private final ChangesCollection changes;
   private final GitRepositoryManager repoManager;
 
   @Inject
-  GetDependency(ChangesCollection changes, GitRepositoryManager repoManager) {
+  GetCrd(ChangesCollection changes, GitRepositoryManager repoManager) {
     this.changes = changes;
     this.repoManager = repoManager;
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public DependencyInfo apply(RevisionResource rsrc)
+  public CrdInfo apply(RevisionResource rsrc)
       throws RepositoryNotFoundException, IOException, BadRequestException,
       AuthException, OrmException {
 
-    DependencyInfo out = new DependencyInfo();
+    CrdInfo out = new CrdInfo();
     out.dependsOn = new ArrayList<>();
     out.neededBy = new ArrayList<>();
 
