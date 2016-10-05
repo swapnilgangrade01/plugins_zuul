@@ -19,10 +19,10 @@ limitations under the License.
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.googlesource.gerrit.plugins</groupId>
-  <artifactId>dependson</artifactId>
+  <artifactId>zuul</artifactId>
   <packaging>jar</packaging>
   <version>2.13-SNAPSHOT</version>
-  <name>dependson</name>
+  <name>zuul</name>
 
   <properties>
     <Gerrit-ApiType>plugin</Gerrit-ApiType>
@@ -41,9 +41,9 @@ limitations under the License.
           </includes>
           <archive>
             <manifestEntries>
-              <Gerrit-PluginName>dependson</Gerrit-PluginName>
-              <Gerrit-Module>com.googlesource.gerrit.plugins.dependson.Module</Gerrit-Module>
-              <Gerrit-HttpModule>com.googlesource.gerrit.plugins.dependson.HttpModule</Gerrit-HttpModule>
+              <Gerrit-PluginName>zuul</Gerrit-PluginName>
+              <Gerrit-Module>com.googlesource.gerrit.plugins.zuul.Module</Gerrit-Module>
+              <Gerrit-HttpModule>com.googlesource.gerrit.plugins.zuul.HttpModule</Gerrit-HttpModule>
               <Implementation-Vendor>Gerrit Code Review</Implementation-Vendor>
               <Implementation-URL>https://www.gerritcodereview.com/</Implementation-URL>
 
@@ -73,7 +73,7 @@ limitations under the License.
         <artifactId>gwt-maven-plugin</artifactId>
         <version>2.7.0</version>
         <configuration>
-          <module>com.googlesource.gerrit.plugins.dependson.DependsOn</module>
+          <module>com.googlesource.gerrit.plugins.zuul.Zuul</module>
           <disableClassMetadata>true</disableClassMetadata>
           <disableCastChecking>true</disableCastChecking>
           <webappDirectory>${project.build.directory}/classes/static</webappDirectory>
