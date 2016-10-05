@@ -10,18 +10,18 @@ Please also take note of the general information on the
 <a id="plugin-endpoints"> @PLUGIN@ Endpoints
 --------------------------------------------
 
-### <a id="get-dependency"> Get Dependency
+### <a id="get-crd"> Get CRD
 
-__GET__ /changes/{change-id}/revisions/{revision-id}/@PLUGIN@~dependency
+__GET__ /changes/{change-id}/revisions/{revision-id}/@PLUGIN@~crd
 
-Gets the zuul [dependency](#dependency-info) for a change.  Please refer to the
+Gets the zuul [CRD](#crd-info) for a change.  Please refer to the
 general [changes rest api](../../../Documentation/rest-api-changes.html#get-review)
 for additional info on this request.
 
 #### Request
 
 ```
-  GET /changes/myProject~master~I8473b95934b5732ac55d26311a706c9c2bde9940/revisions/674ac754f91e64a0efb8087e59a176484bd534d1/@PLUGIN@~dependency HTTP/1.0
+  GET /changes/myProject~master~I8473b95934b5732ac55d26311a706c9c2bde9940/revisions/674ac754f91e64a0efb8087e59a176484bd534d1/@PLUGIN@~crd HTTP/1.0
 ```
 
 #### Response
@@ -47,9 +47,9 @@ for additional info on this request.
 <a id="json-entities">JSON Entities
 -----------------------------------
 
-### <a id="dependency-info"></a>DependencyInfo
+### <a id="crd-info"></a>CrdInfo
 
-The `DependencyInfo` entity shows zuul dependencies on a patch set.
+The `CrdInfo` entity shows zuul dependencies on a patch set.
 
 |Field Name |Description|
 |:----------|:----------|

@@ -26,7 +26,7 @@ public class Module extends AbstractModule {
     install(new RestApiModule() {
       @Override
       protected void configure() {
-        get(REVISION_KIND, "dependency").to(GetDependency.class);
+        get(REVISION_KIND, "crd").to(GetCrd.class);
       }
     });
   }

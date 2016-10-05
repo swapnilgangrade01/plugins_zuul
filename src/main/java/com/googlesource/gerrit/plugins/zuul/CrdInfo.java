@@ -16,7 +16,7 @@ package com.googlesource.gerrit.plugins.zuul;
 
 import java.util.List;
 
-public class DependencyInfo {
+public class CrdInfo {
   public List<String> dependsOn;
   public List<String> neededBy;
   public boolean cycle;
