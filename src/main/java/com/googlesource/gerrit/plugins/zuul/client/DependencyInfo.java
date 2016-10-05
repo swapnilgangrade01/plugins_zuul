@@ -1,4 +1,4 @@
-package com.googlesource.gerrit.plugins.dependson.client;
+package com.googlesource.gerrit.plugins.zuul.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;

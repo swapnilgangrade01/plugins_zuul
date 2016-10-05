@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.googlesource.gerrit.plugins.dependson;
+package com.googlesource.gerrit.plugins.zuul;
 
 import com.google.gerrit.extensions.registration.DynamicSet;
 import com.google.gerrit.extensions.webui.GwtPlugin;
@@ -24,6 +24,6 @@ public class HttpModule extends HttpPluginModule {
   @Override
   protected void configureServlets() {
     DynamicSet.bind(binder(), WebUiPlugin.class)
-        .toInstance(new GwtPlugin("dependson"));
+        .toInstance(new GwtPlugin("zuul"));
   }
 }

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.googlesource.gerrit.plugins.dependson.client;
+package com.googlesource.gerrit.plugins.zuul.client;
 
 import com.google.gerrit.client.GerritUiExtensionPoint;
 import com.google.gerrit.client.info.ChangeInfo;
