@@ -20,6 +20,7 @@ import com.google.gerrit.client.info.ChangeInfo.RevisionInfo;
 import com.google.gerrit.plugin.client.Plugin;
 import com.google.gerrit.plugin.client.extension.Panel;
 import com.google.gerrit.plugin.client.rpc.RestApi;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -45,7 +46,8 @@ public class LabelPanel extends VerticalPanel {
         panel.getObject(GerritUiExtensionPoint.Key.REVISION_INFO).cast();
 
     if (!rev.isEdit()) {
-      new RestApi("changes").id(change.id()).view("revisions").id(rev.id())
+      String decodedChangeId = URL.decodePathSegment(change.id());
+      new RestApi("changes").id(decodedChangeId).view("revisions").id(rev.id())
           .view(Plugin.get().getPluginName(), "crd")
           .get(new AsyncCallback<DependencyInfo>() {
             @Override
