@@ -8,7 +8,7 @@ gerrit_plugin(
   manifest_entries = [
     'Gerrit-PluginName: zuul',
     'Gerrit-ApiType: plugin',
-    'Gerrit-ApiVersion: 2.13-SNAPSHOT',
+    'Gerrit-ApiVersion: 2.14-SNAPSHOT',
     'Gerrit-Module: com.googlesource.gerrit.plugins.zuul.Module',
     'Gerrit-HttpModule: com.googlesource.gerrit.plugins.zuul.HttpModule',
   ],
