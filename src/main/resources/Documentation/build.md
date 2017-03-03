@@ -29,16 +29,3 @@ Gerrit core in `tools/bzl/plugins.bzl`, and execute:
 ```
   ./tools/eclipse/project.py
 ```
-
-Maven
------
-
-Note that the Maven build is provided for compatibility reasons, but
-it is considered to be deprecated and will be removed in a future
-version of this plugin.
-
-To build with Maven, run
-
-```
-mvn clean package
-```
