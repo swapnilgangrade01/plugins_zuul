@@ -26,9 +26,10 @@ public class ZuulPlugin extends PluginEntryPoint {
   @Override
   public void onPluginLoad() {
 
-    Plugin.get().panel(
-        GerritUiExtensionPoint.CHANGE_SCREEN_BELOW_COMMIT_INFO_BLOCK,
-        new LabelPanel.Factory(),
-        null);
+    Plugin.get()
+        .panel(
+            GerritUiExtensionPoint.CHANGE_SCREEN_BELOW_COMMIT_INFO_BLOCK,
+            new LabelPanel.Factory(),
+            null);
   }
 }

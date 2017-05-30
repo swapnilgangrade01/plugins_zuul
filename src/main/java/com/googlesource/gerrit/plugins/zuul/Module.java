@@ -23,11 +23,12 @@ public class Module extends AbstractModule {
 
   @Override
   protected void configure() {
-    install(new RestApiModule() {
-      @Override
-      protected void configure() {
-        get(REVISION_KIND, "crd").to(GetCrd.class);
-      }
-    });
+    install(
+        new RestApiModule() {
+          @Override
+          protected void configure() {
+            get(REVISION_KIND, "crd").to(GetCrd.class);
+          }
+        });
   }
 }

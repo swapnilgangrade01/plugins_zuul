@@ -25,7 +25,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
-
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwtexpui.clippy.client.CopyableLabel;
 
@@ -37,31 +36,33 @@ public class LabelPanel extends VerticalPanel {
     }
   }
 
-  private final static String COLOR_RED = "#F00";
+  private static final String COLOR_RED = "#F00";
 
   LabelPanel(final Panel panel) {
-    final ChangeInfo change =
-        panel.getObject(GerritUiExtensionPoint.Key.CHANGE_INFO).cast();
-    final RevisionInfo rev =
-        panel.getObject(GerritUiExtensionPoint.Key.REVISION_INFO).cast();
+    final ChangeInfo change = panel.getObject(GerritUiExtensionPoint.Key.CHANGE_INFO).cast();
+    final RevisionInfo rev = panel.getObject(GerritUiExtensionPoint.Key.REVISION_INFO).cast();
 
     if (!rev.isEdit()) {
       String decodedChangeId = URL.decodePathSegment(change.id());
-      new RestApi("changes").id(decodedChangeId).view("revisions").id(rev.id())
+      new RestApi("changes")
+          .id(decodedChangeId)
+          .view("revisions")
+          .id(rev.id())
           .view(Plugin.get().getPluginName(), "crd")
-          .get(new AsyncCallback<DependencyInfo>() {
-            @Override
-            public void onSuccess(DependencyInfo result) {
-              if (result != null) {
-                display(result);
-              }
-            }
+          .get(
+              new AsyncCallback<DependencyInfo>() {
+                @Override
+                public void onSuccess(DependencyInfo result) {
+                  if (result != null) {
+                    display(result);
+                  }
+                }
 
-            @Override
-            public void onFailure(Throwable caught) {
-              // never invoked
-            }
-          });
+                @Override
+                public void onFailure(Throwable caught) {
+                  // never invoked
+                }
+              });
     }
   }
 
@@ -70,7 +71,7 @@ public class LabelPanel extends VerticalPanel {
     int column = 1;
     Grid grid = new Grid(row, column);
     // show depends-on ids
-    for (int i=0; i < result.dependsOn().length(); i++) {
+    for (int i = 0; i < result.dependsOn().length(); i++) {
       HorizontalPanel p = new HorizontalPanel();
       p.addStyleName("infoBlock");
       Label label = new Label("Depends-on");
@@ -86,7 +87,7 @@ public class LabelPanel extends VerticalPanel {
       row++;
     }
     // show needed-by ids
-    for (int i=0; i < result.neededBy().length(); i++) {
+    for (int i = 0; i < result.neededBy().length(); i++) {
       HorizontalPanel p = new HorizontalPanel();
       p.addStyleName("infoBlock");
       Label label = new Label("Needed-by");

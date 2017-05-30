@@ -28,18 +28,16 @@ import com.google.gerrit.server.query.change.QueryChanges;
 import com.google.gwtorm.server.OrmException;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
-import org.eclipse.jgit.errors.RepositoryNotFoundException;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.eclipse.jgit.errors.RepositoryNotFoundException;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
 
 @Singleton
 public class GetCrd implements RestReadView<RevisionResource> {
@@ -55,8 +53,8 @@ public class GetCrd implements RestReadView<RevisionResource> {
   @Override
   @SuppressWarnings("unchecked")
   public CrdInfo apply(RevisionResource rsrc)
-      throws RepositoryNotFoundException, IOException, BadRequestException,
-      AuthException, OrmException {
+      throws RepositoryNotFoundException, IOException, BadRequestException, AuthException,
+          OrmException {
 
     CrdInfo out = new CrdInfo();
     out.dependsOn = new ArrayList<>();
@@ -69,8 +67,7 @@ public class GetCrd implements RestReadView<RevisionResource> {
       String rev = rsrc.getPatchSet().getRevision().get();
       RevCommit commit = rw.parseCommit(ObjectId.fromString(rev));
       String commitMsg = commit.getFullMessage();
-      Pattern pattern = Pattern.compile("[Dd]epends-[Oo]n:? (I[0-9a-f]{8,40})",
-          Pattern.DOTALL);
+      Pattern pattern = Pattern.compile("[Dd]epends-[Oo]n:? (I[0-9a-f]{8,40})", Pattern.DOTALL);
       Matcher matcher = pattern.matcher(commitMsg);
       while (matcher.find()) {
         out.dependsOn.add(matcher.group(1));
@@ -82,8 +79,7 @@ public class GetCrd implements RestReadView<RevisionResource> {
     QueryChanges query = changes.list();
     String neededByQuery = "message:" + chgKey + " -change:" + chgKey;
     query.addQuery(neededByQuery);
-    List<ChangeInfo> changes =
-        (List<ChangeInfo>) query.apply(TopLevelResource.INSTANCE);
+    List<ChangeInfo> changes = (List<ChangeInfo>) query.apply(TopLevelResource.INSTANCE);
     // check for dependency cycles
     for (ChangeInfo change : changes) {
       if (out.dependsOn.contains(change.changeId)) {
