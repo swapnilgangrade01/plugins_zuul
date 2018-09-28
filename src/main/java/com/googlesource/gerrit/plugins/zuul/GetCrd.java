@@ -23,6 +23,7 @@ import com.google.gerrit.reviewdb.client.Change;
 import com.google.gerrit.reviewdb.client.Project;
 import com.google.gerrit.server.change.RevisionResource;
 import com.google.gerrit.server.git.GitRepositoryManager;
+import com.google.gerrit.server.permissions.PermissionBackendException;
 import com.google.gerrit.server.restapi.change.ChangesCollection;
 import com.google.gerrit.server.restapi.change.QueryChanges;
 import com.google.gwtorm.server.OrmException;
@@ -54,7 +55,7 @@ public class GetCrd implements RestReadView<RevisionResource> {
   @SuppressWarnings("unchecked")
   public CrdInfo apply(RevisionResource rsrc)
       throws RepositoryNotFoundException, IOException, BadRequestException, AuthException,
-          OrmException {
+          OrmException, PermissionBackendException {
 
     CrdInfo out = new CrdInfo();
     out.dependsOn = new ArrayList<>();
