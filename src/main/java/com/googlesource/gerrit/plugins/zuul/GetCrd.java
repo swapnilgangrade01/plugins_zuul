@@ -14,6 +14,7 @@
 
 package com.googlesource.gerrit.plugins.zuul;
 
+import com.google.common.flogger.FluentLogger;
 import com.google.gerrit.entities.Change;
 import com.google.gerrit.entities.Project;
 import com.google.gerrit.extensions.common.ChangeInfo;
@@ -42,6 +43,8 @@ import org.eclipse.jgit.revwalk.RevWalk;
 
 @Singleton
 public class GetCrd implements RestReadView<RevisionResource> {
+  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
+
   private final ChangesCollection changes;
   private final GitRepositoryManager repoManager;
 
@@ -60,6 +63,8 @@ public class GetCrd implements RestReadView<RevisionResource> {
     out.dependsOn = new ArrayList<>();
     out.neededBy = new ArrayList<>();
 
+    Change.Key chgKey = rsrc.getChange().getKey();
+
     // get depends on info
     Project.NameKey p = rsrc.getChange().getProject();
     try (Repository repo = repoManager.openRepository(p);
@@ -70,12 +75,13 @@ public class GetCrd implements RestReadView<RevisionResource> {
       Pattern pattern = Pattern.compile("[Dd]epends-[Oo]n:? (I[0-9a-f]{8,40})", Pattern.DOTALL);
       Matcher matcher = pattern.matcher(commitMsg);
       while (matcher.find()) {
-        out.dependsOn.add(matcher.group(1));
+        String changeId = matcher.group(1);
+        logger.atFinest().log("Change %s depends on change %s", chgKey, changeId);
+        out.dependsOn.add(changeId);
       }
     }
 
     // get needed by info
-    Change.Key chgKey = rsrc.getChange().getKey();
     QueryChanges query = changes.list();
     String neededByQuery = "message:" + chgKey + " -change:" + chgKey;
     query.addQuery(neededByQuery);
@@ -83,10 +89,14 @@ public class GetCrd implements RestReadView<RevisionResource> {
     List<ChangeInfo> changes = (List<ChangeInfo>) response.value();
     // check for dependency cycles
     for (ChangeInfo change : changes) {
-      if (out.dependsOn.contains(change.changeId)) {
+      String changeId = change.changeId;
+      logger.atFinest().log("Change %s needed by %s", chgKey, changeId);
+      if (out.dependsOn.contains(changeId)) {
+        logger.atFiner().log(
+            "Detected dependency cycle between changes %s and %s", chgKey, changeId);
         out.cycle = true;
       }
-      out.neededBy.add(change.changeId);
+      out.neededBy.add(changeId);
     }
 
     return Response.ok(out);
