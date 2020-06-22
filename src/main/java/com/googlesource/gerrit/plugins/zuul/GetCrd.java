@@ -63,7 +63,7 @@ public class GetCrd implements RestReadView<RevisionResource> {
     out.dependsOn = new ArrayList<>();
     out.neededBy = new ArrayList<>();
 
-    Change.Key chgKey = rsrc.getChange().getKey();
+    Change.Key thisId = rsrc.getChange().getKey();
 
     // get depends on info
     Project.NameKey p = rsrc.getChange().getProject();
@@ -75,28 +75,28 @@ public class GetCrd implements RestReadView<RevisionResource> {
       Pattern pattern = Pattern.compile("[Dd]epends-[Oo]n:? (I[0-9a-f]{8,40})", Pattern.DOTALL);
       Matcher matcher = pattern.matcher(commitMsg);
       while (matcher.find()) {
-        String changeId = matcher.group(1);
-        logger.atFinest().log("Change %s depends on change %s", chgKey, changeId);
-        out.dependsOn.add(changeId);
+        String otherId = matcher.group(1);
+        logger.atFinest().log("Change %s depends on change %s", thisId, otherId);
+        out.dependsOn.add(otherId);
       }
     }
 
     // get needed by info
     QueryChanges query = changes.list();
-    String neededByQuery = "message:" + chgKey + " -change:" + chgKey;
+    String neededByQuery = "message:" + thisId + " -change:" + thisId;
     query.addQuery(neededByQuery);
     Response<List<?>> response = query.apply(TopLevelResource.INSTANCE);
     List<ChangeInfo> changes = (List<ChangeInfo>) response.value();
     // check for dependency cycles
-    for (ChangeInfo change : changes) {
-      String changeId = change.changeId;
-      logger.atFinest().log("Change %s needed by %s", chgKey, changeId);
-      if (out.dependsOn.contains(changeId)) {
+    for (ChangeInfo other : changes) {
+      String otherId = other.changeId;
+      logger.atFinest().log("Change %s needed by %s", thisId, otherId);
+      if (out.dependsOn.contains(otherId)) {
         logger.atFiner().log(
-            "Detected dependency cycle between changes %s and %s", chgKey, changeId);
+            "Detected dependency cycle between changes %s and %s", thisId, otherId);
         out.cycle = true;
       }
-      out.neededBy.add(changeId);
+      out.neededBy.add(otherId);
     }
 
     return Response.ok(out);
