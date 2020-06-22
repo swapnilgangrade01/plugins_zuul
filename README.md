@@ -12,11 +12,7 @@ dependency relationships.
 detect.
 
 To help alleviate these issues this plugin adds the following:
-* A reverse lookup for the 'depends-on' reference. The 'needed-by' reference has
-been added to the Gerrit UI to let users know that the currently viewed change
-is needed by a referenced change.
-* Dependency cycle detection which will display the CRD references in red if a
-dependency cycle has been detected.
+* A reverse lookup for the 'depends-on' reference.
 * A REST endpoint to allow other clients to retrieve CRD info.
 
 Detailed information about this plugin can be found in the documentation.

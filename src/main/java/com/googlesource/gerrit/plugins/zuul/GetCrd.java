@@ -14,19 +14,19 @@
 
 package com.googlesource.gerrit.plugins.zuul;
 
+import com.google.gerrit.entities.Change;
+import com.google.gerrit.entities.Project;
 import com.google.gerrit.extensions.common.ChangeInfo;
 import com.google.gerrit.extensions.restapi.AuthException;
 import com.google.gerrit.extensions.restapi.BadRequestException;
+import com.google.gerrit.extensions.restapi.Response;
 import com.google.gerrit.extensions.restapi.RestReadView;
 import com.google.gerrit.extensions.restapi.TopLevelResource;
-import com.google.gerrit.reviewdb.client.Change;
-import com.google.gerrit.reviewdb.client.Project;
 import com.google.gerrit.server.change.RevisionResource;
 import com.google.gerrit.server.git.GitRepositoryManager;
 import com.google.gerrit.server.permissions.PermissionBackendException;
 import com.google.gerrit.server.restapi.change.ChangesCollection;
 import com.google.gerrit.server.restapi.change.QueryChanges;
-import com.google.gwtorm.server.OrmException;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.io.IOException;
@@ -53,10 +53,9 @@ public class GetCrd implements RestReadView<RevisionResource> {
 
   @Override
   @SuppressWarnings("unchecked")
-  public CrdInfo apply(RevisionResource rsrc)
+  public Response<CrdInfo> apply(RevisionResource rsrc)
       throws RepositoryNotFoundException, IOException, BadRequestException, AuthException,
-          OrmException, PermissionBackendException {
-
+          PermissionBackendException {
     CrdInfo out = new CrdInfo();
     out.dependsOn = new ArrayList<>();
     out.neededBy = new ArrayList<>();
@@ -65,7 +64,7 @@ public class GetCrd implements RestReadView<RevisionResource> {
     Project.NameKey p = rsrc.getChange().getProject();
     try (Repository repo = repoManager.openRepository(p);
         RevWalk rw = new RevWalk(repo)) {
-      String rev = rsrc.getPatchSet().getRevision().get();
+      String rev = rsrc.getPatchSet().commitId().getName();
       RevCommit commit = rw.parseCommit(ObjectId.fromString(rev));
       String commitMsg = commit.getFullMessage();
       Pattern pattern = Pattern.compile("[Dd]epends-[Oo]n:? (I[0-9a-f]{8,40})", Pattern.DOTALL);
@@ -80,7 +79,8 @@ public class GetCrd implements RestReadView<RevisionResource> {
     QueryChanges query = changes.list();
     String neededByQuery = "message:" + chgKey + " -change:" + chgKey;
     query.addQuery(neededByQuery);
-    List<ChangeInfo> changes = (List<ChangeInfo>) query.apply(TopLevelResource.INSTANCE);
+    Response<List<?>> response = query.apply(TopLevelResource.INSTANCE);
+    List<ChangeInfo> changes = (List<ChangeInfo>) response.value();
     // check for dependency cycles
     for (ChangeInfo change : changes) {
       if (out.dependsOn.contains(change.changeId)) {
@@ -89,6 +89,6 @@ public class GetCrd implements RestReadView<RevisionResource> {
       out.neededBy.add(change.changeId);
     }
 
-    return out;
+    return Response.ok(out);
   }
 }
