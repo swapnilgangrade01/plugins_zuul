@@ -24,7 +24,6 @@ import com.google.gerrit.extensions.restapi.Response;
 import com.google.gerrit.extensions.restapi.RestReadView;
 import com.google.gerrit.extensions.restapi.TopLevelResource;
 import com.google.gerrit.server.change.RevisionResource;
-import com.google.gerrit.server.git.GitRepositoryManager;
 import com.google.gerrit.server.permissions.PermissionBackendException;
 import com.google.gerrit.server.restapi.change.ChangesCollection;
 import com.google.gerrit.server.restapi.change.QueryChanges;
@@ -36,22 +35,18 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.eclipse.jgit.errors.RepositoryNotFoundException;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
 
 @Singleton
 public class GetCrd implements RestReadView<RevisionResource> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
   private final ChangesCollection changes;
-  private final GitRepositoryManager repoManager;
+  private final CommitMessageFetcher commitMessageFetcher;
 
   @Inject
-  GetCrd(ChangesCollection changes, GitRepositoryManager repoManager) {
+  GetCrd(ChangesCollection changes, CommitMessageFetcher commitMessageFetcher) {
     this.changes = changes;
-    this.repoManager = repoManager;
+    this.commitMessageFetcher = commitMessageFetcher;
   }
 
   @Override
@@ -67,18 +62,14 @@ public class GetCrd implements RestReadView<RevisionResource> {
 
     // get depends on info
     Project.NameKey p = rsrc.getChange().getProject();
-    try (Repository repo = repoManager.openRepository(p);
-        RevWalk rw = new RevWalk(repo)) {
-      String rev = rsrc.getPatchSet().commitId().getName();
-      RevCommit commit = rw.parseCommit(ObjectId.fromString(rev));
-      String commitMsg = commit.getFullMessage();
-      Pattern pattern = Pattern.compile("[Dd]epends-[Oo]n:? (I[0-9a-f]{8,40})", Pattern.DOTALL);
-      Matcher matcher = pattern.matcher(commitMsg);
-      while (matcher.find()) {
-        String otherId = matcher.group(1);
-        logger.atFinest().log("Change %s depends on change %s", thisId, otherId);
-        out.dependsOn.add(otherId);
-      }
+    String rev = rsrc.getPatchSet().commitId().getName();
+    String commitMsg = commitMessageFetcher.fetch(p, rev);
+    Pattern pattern = Pattern.compile("[Dd]epends-[Oo]n:? (I[0-9a-f]{8,40})", Pattern.DOTALL);
+    Matcher matcher = pattern.matcher(commitMsg);
+    while (matcher.find()) {
+      String otherId = matcher.group(1);
+      logger.atFinest().log("Change %s depends on change %s", thisId, otherId);
+      out.dependsOn.add(otherId);
     }
 
     // get needed by info
