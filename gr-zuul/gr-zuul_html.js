@@ -51,6 +51,15 @@ export const htmlTemplate = Polymer.html`
         flex-shrink: 0;
         width: 1.2em;
       }
+      .status {
+        color: var(--deemphasized-text-color);
+        font-weight: var(--font-weight-bold);
+        margin-left: var(--spacing-xs);
+      }
+      /* The above styles are copy/paste from gr-related-changes-list_html.js */
+      .dependencyCycleDetected {
+        color: #d17171;
+      }
     </style>
     <template is="dom-if" if="[[_crd_loaded]]">
       <template is="dom-if" if="[[_crd.depends_on.length]]">
@@ -64,6 +73,11 @@ export const htmlTemplate = Polymer.html`
               >
                 [[item]]
               </a>
+              <template is="dom-if" if="[[_crd.cycle]]">
+                <span class="status dependencyCycleDetected">
+                  (Dependency cycle detected)
+                </span>
+              </template>
             </div>
           </template>
         </section>
@@ -79,6 +93,11 @@ export const htmlTemplate = Polymer.html`
               >
                 [[item]]
               </a>
+              <template is="dom-if" if="[[_crd.cycle]]">
+                <span class="status dependencyCycleDetected">
+                  (Dependency cycle detected)
+                </span>
+              </template>
             </div>
           </template>
         </section>
