@@ -17,23 +17,18 @@ package com.googlesource.gerrit.plugins.zuul;
 import com.google.common.flogger.FluentLogger;
 import com.google.gerrit.entities.Change;
 import com.google.gerrit.entities.Project;
-import com.google.gerrit.extensions.common.ChangeInfo;
 import com.google.gerrit.extensions.restapi.AuthException;
 import com.google.gerrit.extensions.restapi.BadRequestException;
 import com.google.gerrit.extensions.restapi.Response;
 import com.google.gerrit.extensions.restapi.RestReadView;
-import com.google.gerrit.extensions.restapi.TopLevelResource;
 import com.google.gerrit.server.change.RevisionResource;
 import com.google.gerrit.server.permissions.PermissionBackendException;
-import com.google.gerrit.server.restapi.change.ChangesCollection;
-import com.google.gerrit.server.restapi.change.QueryChanges;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.googlesource.gerrit.plugins.zuul.util.CommitMessageFetcher;
-
+import com.googlesource.gerrit.plugins.zuul.util.NeededByFetcher;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.eclipse.jgit.errors.RepositoryNotFoundException;
@@ -42,27 +37,24 @@ import org.eclipse.jgit.errors.RepositoryNotFoundException;
 public class GetCrd implements RestReadView<RevisionResource> {
   private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-  private final ChangesCollection changes;
   private final CommitMessageFetcher commitMessageFetcher;
+  private final NeededByFetcher neededByFetcher;
 
   @Inject
-  GetCrd(ChangesCollection changes, CommitMessageFetcher commitMessageFetcher) {
-    this.changes = changes;
+  GetCrd(CommitMessageFetcher commitMessageFetcher, NeededByFetcher neededByFetcher) {
     this.commitMessageFetcher = commitMessageFetcher;
+    this.neededByFetcher = neededByFetcher;
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public Response<CrdInfo> apply(RevisionResource rsrc)
       throws RepositoryNotFoundException, IOException, BadRequestException, AuthException,
           PermissionBackendException {
     CrdInfo out = new CrdInfo();
-    out.dependsOn = new ArrayList<>();
-    out.neededBy = new ArrayList<>();
-
     Change.Key thisId = rsrc.getChange().getKey();
 
     // get depends on info
+    out.dependsOn = new ArrayList<>();
     Project.NameKey p = rsrc.getChange().getProject();
     String rev = rsrc.getPatchSet().commitId().getName();
     String commitMsg = commitMessageFetcher.fetch(p, rev);
@@ -74,24 +66,15 @@ public class GetCrd implements RestReadView<RevisionResource> {
       out.dependsOn.add(otherId);
     }
 
-    // get needed by info
-    QueryChanges query = changes.list();
-    String neededByQuery = "message:" + thisId + " -change:" + thisId;
-    query.addQuery(neededByQuery);
-    Response<List<?>> response = query.apply(TopLevelResource.INSTANCE);
-    List<ChangeInfo> changes = (List<ChangeInfo>) response.value();
-    // check for dependency cycles
-    for (ChangeInfo other : changes) {
-      String otherId = other.changeId;
-      logger.atFinest().log("Change %s needed by %s", thisId, otherId);
-      if (out.dependsOn.contains(otherId)) {
-        logger.atFiner().log(
-            "Detected dependency cycle between changes %s and %s", thisId, otherId);
-        out.cycle = true;
-      }
-      out.neededBy.add(otherId);
-    }
+    out.neededBy = neededByFetcher.fetchForChangeKey(thisId);
 
+    out.cycle = false;
+    for (String neededKey : out.neededBy) {
+      if (out.dependsOn.contains(neededKey)) {
+        out.cycle = true;
+        break;
+      }
+    }
     return Response.ok(out);
   }
 }
