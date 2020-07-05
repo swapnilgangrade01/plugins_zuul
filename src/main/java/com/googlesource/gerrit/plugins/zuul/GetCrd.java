@@ -29,6 +29,8 @@ import com.google.gerrit.server.restapi.change.ChangesCollection;
 import com.google.gerrit.server.restapi.change.QueryChanges;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.googlesource.gerrit.plugins.zuul.util.CommitMessageFetcher;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

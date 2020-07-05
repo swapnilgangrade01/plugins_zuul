@@ -29,6 +29,8 @@ import com.google.gerrit.extensions.restapi.TopLevelResource;
 import com.google.gerrit.server.change.RevisionResource;
 import com.google.gerrit.server.restapi.change.ChangesCollection;
 import com.google.gerrit.server.restapi.change.QueryChanges;
+import com.googlesource.gerrit.plugins.zuul.util.CommitMessageFetcher;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
