@@ -30,6 +30,11 @@ class GrZuul extends Polymer.Element {
         type: Object,
         observer: '_onChangeChanged',
       },
+      hidden: {
+        type: Boolean,
+        value: true,
+        reflectToAttribute: true,
+      },
       _crd: {
         type: Object,
         value: {},
@@ -43,11 +48,24 @@ class GrZuul extends Polymer.Element {
 
   _onChangeChanged() {
     this._crd_loaded = false;
+    this.setHidden(true);
     const url = '/changes/' + this.change.id + '/revisions/current/crd';
     return this.plugin.restApi().send('GET', url).then(crd => {
       this._crd = crd;
       this._crd_loaded = true;
+      this.setHidden(!(crd.depends_on.length || crd.needed_by.length));
     });
+  }
+
+  setHidden(hidden) {
+    if (this.hidden != hidden) {
+      this.hidden = hidden;
+
+      // Flag to parents that something changed
+      this.dispatchEvent(new CustomEvent('new-section-loaded', {
+        composed: true, bubbles: true,
+      }));
+    }
   }
 
   _computeDependencyUrl(changeId) {
