@@ -15,6 +15,7 @@ gerrit_plugin(
     name = "zuul",
     srcs = glob(["src/main/java/**/*.java"]),
     resources = glob(["src/main/**/*"]),
+    deps = ["@commons-lang3//jar"],
     manifest_entries = [
         "Gerrit-PluginName: zuul",
         "Gerrit-Module: com.googlesource.gerrit.plugins.zuul.Module",
@@ -39,6 +40,7 @@ java_library(
     visibility = ["//visibility:public"],
     exports = PLUGIN_DEPS + PLUGIN_TEST_DEPS + [
         ":zuul__plugin",
+        "@commons-lang3//jar",
     ],
 )
 

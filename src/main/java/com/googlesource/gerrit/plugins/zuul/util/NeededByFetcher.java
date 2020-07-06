@@ -43,10 +43,10 @@ public class NeededByFetcher {
     this.dependsOnExtractor = dependsOnExtractor;
   }
 
-  public List<String> fetchForChangeKey(Change.Key key)
+  public List<ChangeInfo> fetchForChangeKey(Change.Key key)
       throws BadRequestException, AuthException, PermissionBackendException {
     String keyString = key.toString();
-    List<String> neededBy = new ArrayList<>();
+    List<ChangeInfo> neededBy = new ArrayList<>();
 
     QueryChanges query = changes.list();
     String neededByQuery = "message:" + keyString + " -change:" + keyString;
@@ -63,7 +63,7 @@ public class NeededByFetcher {
       String commitMessage = commitMessageFetcher.fetch(changeInfo);
       List<String> dependencies = dependsOnExtractor.extract(commitMessage);
       if (dependencies.contains(keyString)) {
-        neededBy.add(changeInfo.changeId);
+        neededBy.add(changeInfo);
       }
     }
     return neededBy;

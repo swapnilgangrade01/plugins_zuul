@@ -14,10 +14,20 @@
 
 package com.googlesource.gerrit.plugins.zuul;
 
+import com.google.gerrit.extensions.common.ChangeInfo;
 import java.util.List;
 
+/** Cross-repository dependencies of a Change */
 public class CrdInfo {
-  public List<String> dependsOn;
-  public List<String> neededBy;
+  /** Shallow ChangeInfos of changes that depend on this Change and are available on this server */
+  public List<ChangeInfo> dependsOnFound;
+
+  /** Change-Ids of changes that depend on this Change and are not available on this server */
+  public List<String> dependsOnMissing;
+
+  /** Shallow ChangeInfos of changes that depend on this Change */
+  public List<ChangeInfo> neededBy;
+
+  /** true, if this change is contained in a dependency cycle */
   public boolean cycle;
 }

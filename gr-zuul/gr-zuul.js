@@ -53,7 +53,8 @@ class GrZuul extends Polymer.Element {
     return this.plugin.restApi().send('GET', url).then(crd => {
       this._crd = crd;
       this._crd_loaded = true;
-      this.setHidden(!(crd.depends_on.length || crd.needed_by.length));
+      this.setHidden(!(this._isDependsOnSectionVisible()
+                       || crd.needed_by.length));
     });
   }
 
@@ -68,8 +69,13 @@ class GrZuul extends Polymer.Element {
     }
   }
 
-  _computeDependencyUrl(changeId) {
-    return Gerrit.Nav.getUrlForSearchQuery(changeId);
+  _computeDependencyUrl(changeInfo) {
+    return Gerrit.Nav.getUrlForSearchQuery(changeInfo.change_id);
+  }
+
+  _isDependsOnSectionVisible() {
+    return !!(this._crd.depends_on_found.length
+              + this._crd.depends_on_missing.length);
   }
 }
 

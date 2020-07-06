@@ -14,6 +14,7 @@
 
 package com.googlesource.gerrit.plugins.zuul;
 
+import com.google.gerrit.extensions.common.ChangeInfo;
 import com.google.gerrit.extensions.restapi.AuthException;
 import com.google.gerrit.extensions.restapi.BadRequestException;
 import com.google.gerrit.extensions.restapi.Response;
@@ -25,6 +26,10 @@ import com.google.inject.Singleton;
 import com.googlesource.gerrit.plugins.zuul.util.DependsOnFetcher;
 import com.googlesource.gerrit.plugins.zuul.util.NeededByFetcher;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jgit.errors.RepositoryNotFoundException;
 
 @Singleton
@@ -43,14 +48,21 @@ public class GetCrd implements RestReadView<RevisionResource> {
       throws RepositoryNotFoundException, IOException, BadRequestException, AuthException,
           PermissionBackendException {
     CrdInfo out = new CrdInfo();
-
-    out.dependsOn = dependsOnFetcher.fetchForRevision(rsrc);
+    Pair<List<ChangeInfo>, List<String>> dependsOn = dependsOnFetcher.fetchForRevision(rsrc);
+    out.dependsOnFound = dependsOn.getLeft();
+    out.dependsOnMissing = dependsOn.getRight();
 
     out.neededBy = neededByFetcher.fetchForChangeKey(rsrc.getChange().getKey());
 
+    List<String> dependsOnAllKeys = new ArrayList<>(out.dependsOnMissing);
+    dependsOnAllKeys.addAll(
+        out.dependsOnFound.stream()
+            .map(changeInfo -> changeInfo.changeId)
+            .collect(Collectors.toList()));
+
     out.cycle = false;
-    for (String neededKey : out.neededBy) {
-      if (out.dependsOn.contains(neededKey)) {
+    for (ChangeInfo changeInfo : out.neededBy) {
+      if (dependsOnAllKeys.contains(changeInfo.changeId)) {
         out.cycle = true;
         break;
       }

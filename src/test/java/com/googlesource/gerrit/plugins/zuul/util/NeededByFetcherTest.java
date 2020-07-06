@@ -28,7 +28,9 @@ import com.google.gerrit.extensions.restapi.TopLevelResource;
 import com.google.gerrit.server.restapi.change.ChangesCollection;
 import com.google.gerrit.server.restapi.change.QueryChanges;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -39,6 +41,7 @@ public class NeededByFetcherTest {
   private CommitMessageFetcher commitMessageFetcher;
   private DependsOnExtractor dependsOnExtractor;
   private Change.Key changeKey = getChangeKey(1);
+  private Map<Integer, ChangeInfo> changeInfos = new HashMap<>();
 
   @Test
   public void testFetchForChangeKeyNoResults() throws Exception {
@@ -48,7 +51,7 @@ public class NeededByFetcherTest {
 
     NeededByFetcher fetcher = createFetcher();
 
-    List<String> neededBy = fetcher.fetchForChangeKey(changeKey);
+    List<ChangeInfo> neededBy = fetcher.fetchForChangeKey(changeKey);
 
     assertThat(neededBy).isEmpty();
   }
@@ -62,9 +65,9 @@ public class NeededByFetcherTest {
 
     NeededByFetcher fetcher = createFetcher();
 
-    List<String> neededBy = fetcher.fetchForChangeKey(changeKey);
+    List<ChangeInfo> neededBy = fetcher.fetchForChangeKey(changeKey);
 
-    assertThat(neededBy).containsExactly(getChangeKey(2).toString());
+    assertThat(neededBy).containsExactly(getChangeInfo(2));
   }
 
   @Test
@@ -77,7 +80,7 @@ public class NeededByFetcherTest {
 
     NeededByFetcher fetcher = createFetcher();
 
-    List<String> neededBy = fetcher.fetchForChangeKey(changeKey);
+    List<ChangeInfo> neededBy = fetcher.fetchForChangeKey(changeKey);
 
     assertThat(neededBy).isEmpty();
   }
@@ -94,7 +97,7 @@ public class NeededByFetcherTest {
 
     NeededByFetcher fetcher = createFetcher();
 
-    List<String> neededBy = fetcher.fetchForChangeKey(changeKey);
+    List<ChangeInfo> neededBy = fetcher.fetchForChangeKey(changeKey);
 
     assertThat(neededBy).isEmpty();
   }
@@ -109,9 +112,9 @@ public class NeededByFetcherTest {
 
     NeededByFetcher fetcher = createFetcher();
 
-    List<String> neededBy = fetcher.fetchForChangeKey(changeKey);
+    List<ChangeInfo> neededBy = fetcher.fetchForChangeKey(changeKey);
 
-    assertThat(neededBy).containsExactly(getChangeKey(2).toString(), getChangeKey(3).toString());
+    assertThat(neededBy).containsExactly(getChangeInfo(2), getChangeInfo(3));
   }
 
   @Test
@@ -128,9 +131,9 @@ public class NeededByFetcherTest {
 
     NeededByFetcher fetcher = createFetcher();
 
-    List<String> neededBy = fetcher.fetchForChangeKey(changeKey);
+    List<ChangeInfo> neededBy = fetcher.fetchForChangeKey(changeKey);
 
-    assertThat(neededBy).containsExactly(getChangeKey(2).toString(), getChangeKey(5).toString());
+    assertThat(neededBy).containsExactly(getChangeInfo(2), getChangeInfo(5));
   }
 
   /**
@@ -213,10 +216,14 @@ public class NeededByFetcherTest {
   }
 
   private ChangeInfo getChangeInfo(int keyEnding) {
-    ChangeInfo changeInfo = new ChangeInfo();
-    changeInfo.changeId = getChangeKey(keyEnding).toString();
-    changeInfo._number = keyEnding;
-    return changeInfo;
+    return changeInfos.computeIfAbsent(
+        keyEnding,
+        neededKeyEnding -> {
+          ChangeInfo changeInfo = new ChangeInfo();
+          changeInfo.changeId = getChangeKey(neededKeyEnding).toString();
+          changeInfo._number = neededKeyEnding;
+          return changeInfo;
+        });
   }
 
   private NeededByFetcher createFetcher() {

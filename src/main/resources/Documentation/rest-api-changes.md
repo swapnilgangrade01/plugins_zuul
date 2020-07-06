@@ -35,12 +35,25 @@ As response a [CrdInfo](#crd-info) entity is returned that describes the cross-r
 
   )]}'
   {
-    "depends_on": [
-      "Ic79ed94daa9b58527139aadba1b0d59d1f54754b",
-      "I66853bf0c18e60f8de14d44dfb7c2ca1c3793111"
+    "depends_on_found": [
+      {
+        "id": "repo1~master~Ic0f5bcc8f998dfc0f1b7164de7a824f7832d4abe",
+        "project": "zuul/repo1",
+        "branch": "master",
+        [...]
+      }
+    ],
+    "depends_on_missing": [
+      "Ib01834990d3791330d65c469e9a3f93db6eb41f0",
+      "Ic0f5bcc8f998dfc0f1b7164de7a824f7832d4abe",
     ],
     "needed_by": [
-      "I66853bf0c18e60f8de14d44dfb7c2ca1c379311d"
+      {
+        "id": "another%2Frepo~master~I8944323ed34d55af7a17a48c8d8509f3cf62b6bf",
+        "project": "zuul/repo1",
+        "branch": "master",
+        [...]
+      }
     ],
     "cycle": false
   }
@@ -53,11 +66,12 @@ As response a [CrdInfo](#crd-info) entity is returned that describes the cross-r
 
 The `CrdInfo` entity shows zuul dependencies on a patch set.
 
-|Field Name |Description|
-|:----------|:----------|
-|depends_on |List of changes that this change depends on|
-|needed_by  |List of changes that is dependent on this change|
-|cycle      |Whether this change is in a circular dependency chain|
+|Field Name         |Description|
+|:------------------|:----------|
+|depends_on_found   |List of shallow [ChangeInfo](../../../Documentation/rest-api-changes.html#change-info) entities. One for each Change that is available on this server and this change depends on|
+|depends_on_missing |List of Change-Ids. One for each change that is not available on this server although this change depends on|
+|needed_by          |List of shallow [ChangeInfo](../../../Documentation/rest-api-changes.html#change-info) entities. One for each change that is dependent on this change|
+|cycle              |Whether this change is in a circular dependency chain|
 
 
 SEE ALSO

@@ -60,24 +60,37 @@ export const htmlTemplate = Polymer.html`
       .dependencyCycleDetected {
         color: #d17171;
       }
+      .missingFromThisServer {
+        color: #d17171;
+      }
     </style>
     <template is="dom-if" if="[[_crd_loaded]]">
-      <template is="dom-if" if="[[_crd.depends_on.length]]">
+      <template is="dom-if" if="[[_isDependsOnSectionVisible()]]">
         <section class="related-changes-section">
           <h4>Depends on</h4>
-          <template is="dom-repeat" items="[[_crd.depends_on]]">
+          <template is="dom-repeat" items="[[_crd.depends_on_found]]">
             <div class="changeContainer zuulDependencyContainer">
               <a
                 href$="[[_computeDependencyUrl(item)]]"
-                title$="[[item]]"
+                title$="[[item.project]]: [[item.branch]]: [[item.subject]]"
               >
-                [[item]]
+                [[item.project]]: [[item.branch]]: [[item.subject]]
               </a>
               <template is="dom-if" if="[[_crd.cycle]]">
                 <span class="status dependencyCycleDetected">
                   (Dependency cycle detected)
                 </span>
               </template>
+            </div>
+          </template>
+          <template is="dom-repeat" items="[[_crd.depends_on_missing]]">
+            <div class="changeContainer zuulDependencyContainer">
+              <span>
+                [[item]]
+              </span>
+              <span class="status missingFromThisServer">
+                (Missing from this server)
+              </span>
             </div>
           </template>
         </section>
@@ -89,9 +102,9 @@ export const htmlTemplate = Polymer.html`
             <div class="changeContainer zuulDependencyContainer">
               <a
                 href$="[[_computeDependencyUrl(item)]]"
-                title$="[[item]]"
+                title$="[[item.project]]: [[item.branch]]: [[item.subject]]"
               >
-                [[item]]
+                [[item.project]]: [[item.branch]]: [[item.subject]]
               </a>
               <template is="dom-if" if="[[_crd.cycle]]">
                 <span class="status dependencyCycleDetected">
