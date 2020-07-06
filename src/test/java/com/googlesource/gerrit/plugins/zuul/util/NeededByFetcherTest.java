@@ -14,11 +14,14 @@
 package com.googlesource.gerrit.plugins.zuul.util;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.gerrit.entities.Change;
+import com.google.gerrit.extensions.client.ListChangesOption;
 import com.google.gerrit.extensions.common.ChangeInfo;
 import com.google.gerrit.extensions.restapi.Response;
 import com.google.gerrit.extensions.restapi.TopLevelResource;
@@ -33,6 +36,8 @@ import org.mockito.stubbing.Answer;
 
 public class NeededByFetcherTest {
   private ChangesCollection changes;
+  private CommitMessageFetcher commitMessageFetcher;
+  private DependsOnExtractor dependsOnExtractor;
   private Change.Key changeKey = getChangeKey(1);
 
   @Test
@@ -63,6 +68,38 @@ public class NeededByFetcherTest {
   }
 
   @Test
+  public void testFetchForChangeKeySingleResultUnmatchedEmpty() throws Exception {
+    List<ChangeInfo> searchResult = new ArrayList<>();
+    searchResult.add(getChangeInfo(2));
+
+    configureMocks(searchResult);
+    when(dependsOnExtractor.extract("commitMessage2")).thenReturn(new ArrayList<>());
+
+    NeededByFetcher fetcher = createFetcher();
+
+    List<String> neededBy = fetcher.fetchForChangeKey(changeKey);
+
+    assertThat(neededBy).isEmpty();
+  }
+
+  @Test
+  public void testFetchForChangeKeySingleResultUnmatchedDifferent() throws Exception {
+    List<ChangeInfo> searchResult = new ArrayList<>();
+    searchResult.add(getChangeInfo(2));
+
+    configureMocks(searchResult);
+    List<String> extracted = new ArrayList<>();
+    extracted.add(getChangeKey(3).toString());
+    when(dependsOnExtractor.extract("commitMessage2")).thenReturn(extracted);
+
+    NeededByFetcher fetcher = createFetcher();
+
+    List<String> neededBy = fetcher.fetchForChangeKey(changeKey);
+
+    assertThat(neededBy).isEmpty();
+  }
+
+  @Test
   public void testFetchForChangeKeyMultipleResults() throws Exception {
     List<ChangeInfo> searchResult = new ArrayList<>();
     searchResult.add(getChangeInfo(2));
@@ -77,18 +114,46 @@ public class NeededByFetcherTest {
     assertThat(neededBy).containsExactly(getChangeKey(2).toString(), getChangeKey(3).toString());
   }
 
+  @Test
+  public void testFetchForChangeKeyMultipleResultsSomeUnmatched() throws Exception {
+    List<ChangeInfo> searchResult = new ArrayList<>();
+    searchResult.add(getChangeInfo(2));
+    searchResult.add(getChangeInfo(3));
+    searchResult.add(getChangeInfo(4));
+    searchResult.add(getChangeInfo(5));
+
+    configureMocks(searchResult);
+    when(dependsOnExtractor.extract("commitMessage3")).thenReturn(new ArrayList<>());
+    when(dependsOnExtractor.extract("commitMessage4")).thenReturn(new ArrayList<>());
+
+    NeededByFetcher fetcher = createFetcher();
+
+    List<String> neededBy = fetcher.fetchForChangeKey(changeKey);
+
+    assertThat(neededBy).containsExactly(getChangeKey(2).toString(), getChangeKey(5).toString());
+  }
+
+  /**
+   * Sets up mocks for a given search result.
+   *
+   * <p>Each search result is configured to have a `Depends-On` to the changeKey per default. To
+   * refine, override the extraction for ("commitMessage" + number) to the desired list of
+   * Change-Ids.
+   *
+   * @param searchResult The search result to configure.
+   * @throws Exception thrown upon issues.
+   */
   public void configureMocks(final List<ChangeInfo> searchResult) throws Exception {
     QueryChanges queryChanges = mock(QueryChanges.class);
     final AtomicBoolean addedQuery = new AtomicBoolean(false);
-    doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(InvocationOnMock invocation) throws Throwable {
-                addedQuery.getAndSet(true);
-                return null;
-              }
-            })
-        .when(queryChanges)
+    final AtomicBoolean addedOptionCurrentRevision = new AtomicBoolean(false);
+    final AtomicBoolean addedOptionCurrentCommit = new AtomicBoolean(false);
+
+    mockQueryChangesWithSwitch(queryChanges, addedOptionCurrentCommit)
+        .addOption(ListChangesOption.CURRENT_COMMIT);
+    mockQueryChangesWithSwitch(queryChanges, addedOptionCurrentRevision)
+        .addOption(ListChangesOption.CURRENT_REVISION);
+    mockQueryChangesWithSwitch(queryChanges, addedQuery)
         .addQuery("message:" + changeKey + " -change:" + changeKey);
     when(queryChanges.apply(TopLevelResource.INSTANCE))
         .thenAnswer(
@@ -97,12 +162,50 @@ public class NeededByFetcherTest {
               @Override
               public Response<List<ChangeInfo>> answer(InvocationOnMock invocation)
                   throws Throwable {
-                return Response.ok(addedQuery.get() ? searchResult : null);
+                boolean ready =
+                    addedOptionCurrentRevision.get()
+                        && addedOptionCurrentCommit.get()
+                        && addedQuery.get();
+                if (!ready) {
+                  fail("executed query before all options were set");
+                }
+                return Response.ok(searchResult);
               }
             });
 
     changes = mock(ChangesCollection.class);
     when(changes.list()).thenReturn(queryChanges);
+
+    commitMessageFetcher = mock(CommitMessageFetcher.class);
+    when(commitMessageFetcher.fetch(any(ChangeInfo.class)))
+        .thenAnswer(
+            new Answer<String>() {
+              @Override
+              public String answer(InvocationOnMock invocation) throws Throwable {
+                ChangeInfo changeInfo = invocation.getArgument(0);
+                return "commitMessage" + changeInfo._number;
+              }
+            });
+
+    dependsOnExtractor = mock(DependsOnExtractor.class);
+    List<String> extractedMatchList = new ArrayList<>();
+    extractedMatchList.add(changeKey.toString());
+    when(dependsOnExtractor.extract(any(String.class))).thenReturn(extractedMatchList);
+  }
+
+  private QueryChanges mockQueryChangesWithSwitch(
+      QueryChanges queryChanges, AtomicBoolean booleanSwitch) {
+    return doAnswer(
+            new Answer<Void>() {
+              @Override
+              public Void answer(InvocationOnMock invocation) throws Throwable {
+                if (booleanSwitch.getAndSet(true)) {
+                  fail("flag has already been set");
+                }
+                return null;
+              }
+            })
+        .when(queryChanges);
   }
 
   private Change.Key getChangeKey(int keyEnding) {
@@ -112,10 +215,11 @@ public class NeededByFetcherTest {
   private ChangeInfo getChangeInfo(int keyEnding) {
     ChangeInfo changeInfo = new ChangeInfo();
     changeInfo.changeId = getChangeKey(keyEnding).toString();
+    changeInfo._number = keyEnding;
     return changeInfo;
   }
 
   private NeededByFetcher createFetcher() {
-    return new NeededByFetcher(changes);
+    return new NeededByFetcher(changes, commitMessageFetcher, dependsOnExtractor);
   }
 }

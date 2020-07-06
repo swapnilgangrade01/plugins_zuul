@@ -15,6 +15,8 @@
 package com.googlesource.gerrit.plugins.zuul.util;
 
 import com.google.gerrit.entities.Project;
+import com.google.gerrit.extensions.common.ChangeInfo;
+import com.google.gerrit.extensions.common.CommitInfo;
 import com.google.gerrit.server.git.GitRepositoryManager;
 import com.google.inject.Inject;
 import java.io.IOException;
@@ -39,5 +41,20 @@ public class CommitMessageFetcher {
       RevCommit commit = rw.parseCommit(ObjectId.fromString(rev));
       return commit.getFullMessage();
     }
+  }
+
+  /**
+   * Extracts the commit message of the most current revision of a change.
+   *
+   * <p>The ChangeInfo must have the {@link CommitInfo} of at least the most current revision
+   * loaded.
+   *
+   * @param changeInfo The ChangeInfo to extract the commit message from
+   * @return the extracted commit message
+   */
+  public String fetch(ChangeInfo changeInfo) {
+    String current = changeInfo.currentRevision;
+    CommitInfo commitInfo = changeInfo.revisions.get(current).commit;
+    return commitInfo.message;
   }
 }

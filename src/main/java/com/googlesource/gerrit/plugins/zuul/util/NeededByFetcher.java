@@ -13,8 +13,8 @@
 // limitations under the License.
 package com.googlesource.gerrit.plugins.zuul.util;
 
-import com.google.common.flogger.FluentLogger;
 import com.google.gerrit.entities.Change;
+import com.google.gerrit.extensions.client.ListChangesOption;
 import com.google.gerrit.extensions.common.ChangeInfo;
 import com.google.gerrit.extensions.restapi.AuthException;
 import com.google.gerrit.extensions.restapi.BadRequestException;
@@ -29,29 +29,42 @@ import java.util.List;
 
 /** Fetches the Needed-By part of cross repository dependencies. */
 public class NeededByFetcher {
-  private static final FluentLogger logger = FluentLogger.forEnclosingClass();
-
   private final ChangesCollection changes;
+  private final CommitMessageFetcher commitMessageFetcher;
+  private final DependsOnExtractor dependsOnExtractor;
 
   @Inject
-  public NeededByFetcher(ChangesCollection changes) {
+  public NeededByFetcher(
+      ChangesCollection changes,
+      CommitMessageFetcher commitMessageFetcher,
+      DependsOnExtractor dependsOnExtractor) {
     this.changes = changes;
+    this.commitMessageFetcher = commitMessageFetcher;
+    this.dependsOnExtractor = dependsOnExtractor;
   }
 
   public List<String> fetchForChangeKey(Change.Key key)
       throws BadRequestException, AuthException, PermissionBackendException {
+    String keyString = key.toString();
     List<String> neededBy = new ArrayList<>();
 
     QueryChanges query = changes.list();
-    String neededByQuery = "message:" + key + " -change:" + key;
+    String neededByQuery = "message:" + keyString + " -change:" + keyString;
+    query.addOption(ListChangesOption.CURRENT_REVISION);
+    query.addOption(ListChangesOption.CURRENT_COMMIT);
     query.addQuery(neededByQuery);
     Response<List<?>> response = query.apply(TopLevelResource.INSTANCE);
     @SuppressWarnings("unchecked")
     List<ChangeInfo> changes = (List<ChangeInfo>) response.value();
-    for (ChangeInfo other : changes) {
-      String otherKey = other.changeId;
-      logger.atFinest().log("Change %s needed by %s", key, otherKey);
-      neededBy.add(otherKey);
+    for (ChangeInfo changeInfo : changes) {
+      // The search found the key somewhere in the commit message. But this need not be a
+      // `Depends-On`. `key` might be mentioned for a completely different reason. So we need to
+      // check if `key` occurs in a `Depends-On`.
+      String commitMessage = commitMessageFetcher.fetch(changeInfo);
+      List<String> dependencies = dependsOnExtractor.extract(commitMessage);
+      if (dependencies.contains(keyString)) {
+        neededBy.add(changeInfo.changeId);
+      }
     }
     return neededBy;
   }
