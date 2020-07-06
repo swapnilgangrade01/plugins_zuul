@@ -22,7 +22,9 @@ import java.util.regex.Pattern;
 public class DependsOnExtractor {
   public List<String> extract(String commitMessage) {
     List<String> dependsOn = new ArrayList<>();
-    Pattern pattern = Pattern.compile("[Dd]epends-[Oo]n:? (I[0-9a-f]{8,40})", Pattern.DOTALL);
+    Pattern pattern =
+        Pattern.compile(
+            "^Depends-On: (I[0-9a-f]{40})\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
     Matcher matcher = pattern.matcher(commitMessage);
     while (matcher.find()) {
       String key = matcher.group(1);

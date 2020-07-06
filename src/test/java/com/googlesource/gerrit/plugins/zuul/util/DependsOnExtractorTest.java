@@ -30,9 +30,39 @@ public class DependsOnExtractorTest {
   }
 
   @Test
-  public void testExtractSingleDependency() throws Exception {
+  public void testExtractNoDependencyTooShortChangeId() throws Exception {
+    DependsOnExtractor extractor = new DependsOnExtractor();
+    String commitMessage = "subject\n\nDepends-On: I123456789112345678921234567893123456789";
+
+    List<String> extracted = extractor.extract(commitMessage);
+
+    assertThat(extracted).isEmpty();
+  }
+
+  @Test
+  public void testExtractNoDependencyTooLongChangeId() throws Exception {
+    DependsOnExtractor extractor = new DependsOnExtractor();
+    String commitMessage = "subject\n\nDepends-On: I12345678911234567892123456789312345678941";
+
+    List<String> extracted = extractor.extract(commitMessage);
+
+    assertThat(extracted).isEmpty();
+  }
+
+  @Test
+  public void testExtractSingleDependencyLineEnd() throws Exception {
     DependsOnExtractor extractor = new DependsOnExtractor();
     String commitMessage = "subject\n\nDepends-On: " + getChangeKey(1);
+
+    List<String> extracted = extractor.extract(commitMessage);
+
+    assertThat(extracted).containsExactly(getChangeKey(1));
+  }
+
+  @Test
+  public void testExtractSingleDependencyContinuedLine() throws Exception {
+    DependsOnExtractor extractor = new DependsOnExtractor();
+    String commitMessage = "subject\n\nDepends-On: " + getChangeKey(1) + " ";
 
     List<String> extracted = extractor.extract(commitMessage);
 
@@ -69,7 +99,7 @@ public class DependsOnExtractorTest {
   public void testExtractMixedCases() throws Exception {
     DependsOnExtractor extractor = new DependsOnExtractor();
     String commitMessage =
-        "subject\n\ndepends-On: " + getChangeKey(1) + "\nDepends-on: " + getChangeKey(2);
+        "subject\n\ndepends-On: " + getChangeKey(1) + "\nDePeNds-on: " + getChangeKey(2);
 
     List<String> extracted = extractor.extract(commitMessage);
 
