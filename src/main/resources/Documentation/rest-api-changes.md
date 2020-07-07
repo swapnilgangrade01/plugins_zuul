@@ -12,7 +12,7 @@ Please also take note of the general information on the
 
 ### <a id="get-crd"> Get CRD
 
-__GET__ /changes/{change-id}/revisions/{revision-id}/@PLUGIN@~crd
+__GET__ /changes/{change-id}/revisions/{revision-id}/crd
 
 Gets the zuul [CRD](#crd-info) for a change.  Please refer to the
 general [changes rest api](../../../Documentation/rest-api-changes.html#get-review)
@@ -21,7 +21,7 @@ for additional info on this request.
 #### Request
 
 ```
-  GET /changes/myProject~master~I8473b95934b5732ac55d26311a706c9c2bde9940/revisions/674ac754f91e64a0efb8087e59a176484bd534d1/@PLUGIN@~crd HTTP/1.0
+  GET /changes/myProject~master~I8473b95934b5732ac55d26311a706c9c2bde9940/revisions/674ac754f91e64a0efb8087e59a176484bd534d1/crd HTTP/1.0
 ```
 
 #### Response
