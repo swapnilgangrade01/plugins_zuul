@@ -63,6 +63,9 @@ export const htmlTemplate = Polymer.html`
       .missingFromThisServer {
         color: #d17171;
       }
+      .hidden {
+        display: none;
+      }
     </style>
     <template is="dom-if" if="[[_crd_loaded]]">
       <template is="dom-if" if="[[_isDependsOnSectionVisible()]]">
@@ -76,6 +79,9 @@ export const htmlTemplate = Polymer.html`
               >
                 [[item.project]]: [[item.branch]]: [[item.subject]]
               </a>
+              <span class$="[[_computeChangeStatusClass(item)]]">
+                ([[_computeChangeStatus(item)]])
+              </span>
               <template is="dom-if" if="[[_crd.cycle]]">
                 <span class="status dependencyCycleDetected">
                   (Dependency cycle detected)
@@ -106,6 +112,9 @@ export const htmlTemplate = Polymer.html`
               >
                 [[item.project]]: [[item.branch]]: [[item.subject]]
               </a>
+              <span class$="[[_computeChangeStatusClass(item)]]">
+                ([[_computeChangeStatus(item)]])
+              </span>
               <template is="dom-if" if="[[_crd.cycle]]">
                 <span class="status dependencyCycleDetected">
                   (Dependency cycle detected)

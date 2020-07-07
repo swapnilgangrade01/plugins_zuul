@@ -58,6 +58,43 @@ class GrZuul extends Polymer.Element {
     });
   }
 
+  // copied from gr-related-changes-list.js, which is inaccessible from here.
+  // Resolved uses of `this.ChangeStatus.[...]`, as that's inaccessible from here too.
+  // Removed _isIndirectAncestor check, as the needed data is inaccessible from here.
+  // Not all code paths are reachable, as we only have shallow ChangeInfo objects. We leave the
+  // code here nonetheless, to allow for easier updating from gr-related-changes-list.js.
+  _computeChangeStatusClass(change) {
+    const classes = ['status'];
+    if (change._revision_number != change._current_revision_number) {
+      classes.push('notCurrent');
+    } else if (change.submittable) {
+      classes.push('submittable');
+    } else if (change.status == 'NEW') {
+      classes.push('hidden');
+    }
+    return classes.join(' ');
+  }
+
+  // copied from gr-related-changes-list.js, which is inaccessible from here.
+  // Resolved uses of `this.ChangeStatus.[...]`, as that's inaccessible from here too.
+  // Removed _isIndirectAncestor check, as the needed data is inaccessible from here.
+  // Not all code paths are reachable, as we only have shallow ChangeInfo objects. We leave the
+  // code here nonetheless, to allow for easier updating from gr-related-changes-list.js.
+  _computeChangeStatus(change) {
+    switch (change.status) {
+      case 'MERGED':
+        return 'Merged';
+      case 'ABANDONED':
+        return 'Abandoned';
+    }
+    if (change._revision_number != change._current_revision_number) {
+      return 'Not current';
+    } else if (change.submittable) {
+      return 'Submittable';
+    }
+    return '';
+  }
+
   setHidden(hidden) {
     if (this.hidden != hidden) {
       this.hidden = hidden;
