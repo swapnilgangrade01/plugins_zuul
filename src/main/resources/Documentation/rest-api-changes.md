@@ -24,6 +24,8 @@ for additional info on this request.
   GET /changes/myProject~master~I8473b95934b5732ac55d26311a706c9c2bde9940/revisions/674ac754f91e64a0efb8087e59a176484bd534d1/crd HTTP/1.0
 ```
 
+As response a [CrdInfo](#crd-info) entity is returned that describes the cross-repository dependencies.
+
 #### Response
 
 ```
