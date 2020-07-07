@@ -12,7 +12,7 @@ Please also take note of the general information on the
 
 ### <a id="get-crd"> Get CRD
 
-__GET__ /changes/{change-id}/revisions/{revision-id}/crd
+'GET /changes/[\{change-id\}](../../../Documentation/rest-api-changes.html#change-id)/revisions/[\{revision-id\}](../../../Documentation/rest-api-changes.html#revision-id)/crd'
 
 Gets the zuul [CRD](#crd-info) for a change.  Please refer to the
 general [changes rest api](../../../Documentation/rest-api-changes.html#get-review)
