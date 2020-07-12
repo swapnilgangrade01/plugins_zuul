@@ -45,6 +45,7 @@ public class NeededByFetcher {
 
   public List<ChangeInfo> fetchForChangeKey(Change.Key key)
       throws BadRequestException, AuthException, PermissionBackendException {
+    // TODO Add support for URL based `Depends-On` references.
     String keyString = key.toString();
     List<ChangeInfo> neededBy = new ArrayList<>();
 

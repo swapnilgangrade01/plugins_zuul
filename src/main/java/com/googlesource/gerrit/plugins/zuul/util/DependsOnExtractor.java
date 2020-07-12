@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 /** Extracts dependency information from texts. */
 public class DependsOnExtractor {
   public List<String> extract(String commitMessage) {
+    // TODO Add support for URL based `Depends-On` references.
     List<String> dependsOn = new ArrayList<>();
     Pattern pattern =
         Pattern.compile(

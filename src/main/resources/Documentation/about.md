@@ -14,5 +14,8 @@ And dependencies that are not available on the server get highlighted too.
 
 The cross repository dependencies are also exposed through the [REST API](rest-api-changes.html).
 
+This plugin currently does not support URL based dependencies, but only
+`Change-Id` dependencies, which got deprecated in Zuul v3.
+
 [cross repository dependencies]: https://zuul-ci.org/docs/zuul/discussion/gating.html#cross-project-dependencies
 [Dependency cycles]: https://zuul-ci.org/docs/zuul/discussion/gating.html#cycles
