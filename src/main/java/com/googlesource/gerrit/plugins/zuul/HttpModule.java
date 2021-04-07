@@ -22,6 +22,6 @@ import com.google.inject.servlet.ServletModule;
 public class HttpModule extends ServletModule {
   @Override
   protected void configureServlets() {
-    DynamicSet.bind(binder(), WebUiPlugin.class).toInstance(new JavaScriptPlugin("zuul.html"));
+    DynamicSet.bind(binder(), WebUiPlugin.class).toInstance(new JavaScriptPlugin("zuul.js"));
   }
 }
